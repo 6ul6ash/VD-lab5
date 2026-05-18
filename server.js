@@ -2,11 +2,23 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const admin = require('firebase-admin');
+const fs = require('fs');
 
 dotenv.config();
 
 // ─── Firebase Admin Init ───────────────────────────────────────────────────────
-const serviceAccount = require('./serviceAccountKey.json');
+// Production: use FIREBASE_SERVICE_ACCOUNT env variable (JSON string)
+// Local dev:  use serviceAccountKey.json file
+let serviceAccount;
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+} else if (fs.existsSync('./serviceAccountKey.json')) {
+  serviceAccount = require('./serviceAccountKey.json');
+} else {
+  console.error('ERROR: No Firebase credentials found!');
+  console.error('Set FIREBASE_SERVICE_ACCOUNT env variable or add serviceAccountKey.json');
+  process.exit(1);
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
