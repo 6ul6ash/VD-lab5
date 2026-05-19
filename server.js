@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const admin = require('firebase-admin');
 const fs = require('fs');
+const path = require('path');
 
 dotenv.config();
 
@@ -63,6 +64,9 @@ app.use(
 
 app.use(express.json());
 
+// Роздача статичних файлів (фронтенду) з папки 'public'
+app.use(express.static(path.join(__dirname, 'public')));
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 // Health check
@@ -116,6 +120,11 @@ app.post('/api/buildings', rateLimiter, async (req, res) => {
     console.error('POST /api/buildings error:', err);
     res.status(500).json({ error: 'Failed to save building' });
   }
+});
+
+// Перенаправлення всіх інших запитів на index.html (для React Router)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
